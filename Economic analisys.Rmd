@@ -1,0 +1,84 @@
+---
+title: "Profitability"
+author: "Yuri Gross"
+date: "2026-05-20"
+output: html_document
+---
+
+# Libraries
+```{r message=FALSE, warning=FALSE}
+
+library("readxl")
+library("tidyverse")
+library("ggplot2")
+library("magrittr")
+
+
+```
+
+# Data
+```{r}
+df <- read_xlsx("../data/yield.xlsx")
+```
+
+# 1.Revenue
+## 1.1 Wragling
+```{r}
+
+# Wheat prices at day of harvest
+# https://esmis.nal.usda.gov/publication/kansas-daily-grain-bids?date=2025-06
+  # Ashland: $4.9792 bushel
+  # Ottawa: $5.1425 bushel
+  # Scandia: $4.8725 bushel
+
+df %<>% 
+  select(location, plot, block, trt, system, wheat_yield_bu_acre_13.5, soy_yield_bu_acre_13) %>% 
+  mutate(wheat_price = case_when(location == "ashland_bottoms" ~ 4.9792,
+                                 location == "ottawa" ~ 5.1425,
+                                 location == "scandia" ~ 4.8725),
+         soy_price = case_when(location == "ashland_bottoms" ~ 9.4950,
+                                 location == "ottawa" ~ 9.5450,
+                                 location == "scandia" ~ 9.3450),
+         revenue_ac = soy_yield_bu_acre_13*soy_price + wheat_yield_bu_acre_13.5*wheat_price,
+         system = factor(levels = c("SC", "RC", "DC", "SW"))) 
+
+```
+
+##1.2 Visualizing
+```{r}
+
+
+
+ggplot(df, aes(system,revenue_ac))+
+  geom_point()+
+  facet_grid(~location)
+
+```
+
+
+# 2.Costs
+## 2.1 Wragling
+```{r}
+
+#Adding input cost: 
+  #Seeds
+  #Fertilizer
+  #Herbicide
+
+# Mako is $33,00 / 50 lbs
+
+# Wheat seed population
+  # skip row wheat - 75 lbs/acre
+  # solid wheat - 100 lbs/acre
+
+# Soybean seed population
+  # Same across trt: 145,000 seeds were planted to get 125,000
+
+```
+
+
+# 3.Profit
+```{r}
+
+```
+
